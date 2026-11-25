@@ -1,0 +1,15 @@
+  </main>
+
+  <footer class="footer container">공모전 일정관리 · Node.js · Express · EJS · MySQL</footer>
+
+  <% if (currentUser) { %>
+    <% const onList = currentPath === '/' || (currentPath.startsWith('/contests') && currentPath !== '/contests/new'); %>
+    <!-- 모바일 하단 탭 (화면이 좁을 때만 보여요) -->
+    <nav class="tabbar" aria-label="하단 메뉴">
+      <a href="/" class="tab <%= onList ? 'active' : '' %>"><%- icon('list', 22) %><span>목록</span></a>
+      <a href="/contests/new" class="tab tab-add" aria-label="공모전 등록"><span class="tab-plus"><%- icon('plus', 24) %></span></a>
+      <a href="/calendar" class="tab <%= currentPath === '/calendar' ? 'active' : '' %>"><%- icon('calendar', 22) %><span>달력</span></a>
+    </nav>
+  <% } %>
+</body>
+</html>

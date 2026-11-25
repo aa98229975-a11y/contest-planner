@@ -1,0 +1,84 @@
+<%- include('partials/header') %>
+
+<% const backUrl = contest.id ? `/contests/${contest.id}` : '/'; %>
+<a href="<%= backUrl %>" class="back"><%- icon('arrow-left', 16) %>돌아가기</a>
+
+<section class="card form-card">
+  <h1 class="form-title"><%= title %></h1>
+  <p class="form-desc">
+    <%= contest.id ? '바뀐 내용을 고친 뒤 저장하세요.' : '공고 링크가 있으면 붙여 넣기만 해도 대부분 채워져요.' %>
+  </p>
+
+  <% if (errors.length) { %>
+    <ul class="errors">
+      <% errors.forEach((e) => { %><li><%- icon('alert', 16) %><span><%= e %></span></li><% }) %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="<%= action %>" class="form">
+    <div class="autofill">
+      <div class="autofill-head">
+        <span class="autofill-icon"><%- icon('sparkles', 18) %></span>
+        <div>
+          <label for="url" class="autofill-title">공고 링크로 자동 입력</label>
+          <p class="autofill-desc">링크를 붙여 넣고 '자동 입력'을 누르면 이름·주최·마감일을 찾아 채워 줘요</p>
+        </div>
+      </div>
+      <div class="autofill-row">
+        <input type="url" id="url" name="url" value="<%= contest.url || '' %>" maxlength="300"
+               placeholder="https://" autocomplete="off">
+        <button type="button" class="btn btn-primary" id="autofill-btn">자동 입력</button>
+      </div>
+      <p class="autofill-msg" id="autofill-msg" role="status" aria-live="polite"></p>
+    </div>
+
+    <label>공모전 이름<span class="req">*</span>
+      <input type="text" name="title" value="<%= contest.title || '' %>" maxlength="150" required
+             placeholder="어촌 창업 아이디어 공모전">
+    </label>
+
+    <div class="form-row">
+      <label>주최
+        <input type="text" name="organizer" value="<%= contest.organizer || '' %>" maxlength="100"
+               placeholder="○○재단">
+      </label>
+      <label>분야
+        <select name="category">
+          <option value="">선택 안 함</option>
+          <% CATEGORIES.forEach((cat) => { %>
+            <option value="<%= cat %>" <%= contest.category === cat ? 'selected' : '' %>><%= cat %></option>
+          <% }) %>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-row form-row-3">
+      <label>마감 날짜<span class="req">*</span>
+        <input type="date" name="deadline_date" value="<%= contest.deadline_date || '' %>" required>
+      </label>
+      <label>마감 시간<span class="req">*</span>
+        <input type="time" name="deadline_time" value="<%= contest.deadline_time || '23:59' %>" required>
+      </label>
+      <label>상태
+        <select name="status">
+          <% STATUSES.forEach((s) => { %>
+            <option value="<%= s %>" <%= contest.status === s ? 'selected' : '' %>><%= s %></option>
+          <% }) %>
+        </select>
+      </label>
+    </div>
+
+    <label>메모
+      <textarea name="memo" rows="4"
+                placeholder="제출 형식, 분량, 팀 구성 같은 조건을 적어 두세요"><%= contest.memo || '' %></textarea>
+    </label>
+
+    <div class="form-actions">
+      <a href="<%= backUrl %>" class="btn btn-lg">취소</a>
+      <button type="submit" class="btn btn-primary btn-lg"><%= contest.id ? '저장하기' : '등록하기' %></button>
+    </div>
+  </form>
+</section>
+
+<script src="/js/autofill.js" defer></script>
+<%- include('partials/footer') %>

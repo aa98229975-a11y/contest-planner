@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3f4f7">
+  <title><%= title %> · 공모전 일정관리</title>
+  <!-- Pretendard: 한국어 서비스에서 많이 쓰는 무료 글꼴 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="<%= currentUser ? 'has-tabbar' : 'is-guest' %>">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="/" class="logo" aria-label="공모전 일정관리 홈">
+        <span class="logo-mark">D</span>
+        <span class="logo-text">공모전 일정관리</span>
+      </a>
+
+      <% if (currentUser) { %>
+        <% const onList = currentPath === '/' || currentPath.startsWith('/contests'); %>
+        <nav class="nav" aria-label="주요 메뉴">
+          <a href="/" class="nav-link <%= onList ? 'active' : '' %>"><%- icon('list', 17) %>목록</a>
+          <a href="/calendar" class="nav-link <%= currentPath === '/calendar' ? 'active' : '' %>"><%- icon('calendar', 17) %>달력</a>
+        </nav>
+
+        <div class="topbar-right">
+          <a href="/contests/new" class="btn btn-primary btn-sm topbar-add"><%- icon('plus', 16) %>공모전 등록</a>
+          <span class="user-chip" title="<%= currentUser.username %>">
+            <span class="avatar"><%= currentUser.name.slice(0, 1) %></span>
+            <span class="user-name"><%= currentUser.name %></span>
+          </span>
+          <form method="post" action="/logout">
+            <button type="submit" class="btn btn-ghost btn-sm btn-icon" title="로그아웃" aria-label="로그아웃"><%- icon('logout', 18) %></button>
+          </form>
+        </div>
+      <% } else { %>
+        <div class="topbar-right">
+          <a href="/login" class="btn btn-ghost btn-sm">로그인</a>
+          <a href="/signup" class="btn btn-primary btn-sm">회원가입</a>
+        </div>
+      <% } %>
+    </div>
+  </header>
+
+  <% if (flash) { %>
+    <div class="toast" role="status"><%- icon('check', 18) %><span><%= flash %></span></div>
+  <% } %>
+
+  <main class="container">

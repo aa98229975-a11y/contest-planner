@@ -1,0 +1,110 @@
+<%- include('partials/header') %>
+
+<a href="/" class="back"><%- icon('arrow-left', 16) %>목록</a>
+
+<div class="detail-grid">
+  <article class="card detail-card">
+    <div class="detail-top">
+      <div class="detail-badges">
+        <span class="dday <%= ddayClass(contest) %>"><%= ddayLabel(contest) %></span>
+        <span class="badge <%= STATUS_CLASS[contest.status] %>"><%= contest.status %></span>
+      </div>
+      <div class="actions">
+        <a href="/contests/<%= contest.id %>/edit" class="btn btn-sm"><%- icon('edit', 15) %>수정</a>
+        <form method="post" action="/contests/<%= contest.id %>/delete"
+              onsubmit="return confirm('이 공모전과 체크리스트를 모두 삭제할까요?')">
+          <button type="submit" class="btn btn-sm btn-danger btn-icon" title="삭제" aria-label="삭제"><%- icon('trash', 16) %></button>
+        </form>
+      </div>
+    </div>
+
+    <h1 class="detail-title"><%= contest.title %></h1>
+    <p class="detail-sub"><%= [contest.organizer, contest.category].filter(Boolean).join(' · ') || '주최 미입력' %></p>
+
+    <div class="deadline-box <%= ddayClass(contest) %>">
+      <span class="deadline-icon"><%- icon('clock', 20) %></span>
+      <div class="deadline-text">
+        <span class="label">마감</span>
+        <strong class="value"><%= formatDateTime(contest.deadline) %></strong>
+      </div>
+      <% if (timeLeftText(contest)) { %><span class="time-left"><%= timeLeftText(contest) %></span><% } %>
+    </div>
+
+    <dl class="info-list">
+      <div class="info-row">
+        <dt>진행 상태</dt>
+        <dd>
+          <form method="post" action="/contests/<%= contest.id %>/status" class="inline-form">
+            <select name="status" class="select-sm" onchange="this.form.submit()" aria-label="상태 변경">
+              <% STATUSES.forEach((s) => { %>
+                <option value="<%= s %>" <%= contest.status === s ? 'selected' : '' %>><%= s %></option>
+              <% }) %>
+            </select>
+            <noscript><button type="submit" class="btn btn-sm">변경</button></noscript>
+          </form>
+        </dd>
+      </div>
+      <div class="info-row">
+        <dt>주최</dt>
+        <dd><%= contest.organizer || '-' %></dd>
+      </div>
+      <div class="info-row">
+        <dt>분야</dt>
+        <dd><%= contest.category || '-' %></dd>
+      </div>
+      <% if (contest.url) { %>
+        <div class="info-row">
+          <dt>공고</dt>
+          <dd><a href="<%= contest.url %>" target="_blank" rel="noopener noreferrer" class="link"><%- icon('external', 14) %>공고 페이지 열기</a></dd>
+        </div>
+      <% } %>
+      <div class="info-row">
+        <dt>등록일</dt>
+        <dd><%= contest.created_at.slice(0, 10) %></dd>
+      </div>
+    </dl>
+
+    <% if (contest.memo) { %>
+      <div class="memo-wrap">
+        <span class="memo-label">메모</span>
+        <p class="memo"><%= contest.memo %></p>
+      </div>
+    <% } %>
+  </article>
+
+  <section class="card checklist" id="tasks">
+    <div class="check-head">
+      <div>
+        <h2 class="section-title">준비 체크리스트</h2>
+        <p class="check-sub"><%= tasks.length ? `${tasks.length}개 중 ${done}개 완료` : '할 일을 작게 쪼개서 적어 보세요' %></p>
+      </div>
+      <strong class="check-percent"><%= percent(done, tasks.length) %><small>%</small></strong>
+    </div>
+    <div class="progress progress-lg">
+      <span class="progress-bar" style="width: <%= percent(done, tasks.length) %>%"></span>
+    </div>
+
+    <ul class="task-list">
+      <% tasks.forEach((t) => { %>
+        <li class="task <%= t.is_done ? 'done' : '' %>">
+          <form method="post" action="/tasks/<%= t.id %>/toggle" class="task-toggle">
+            <label>
+              <input type="checkbox" class="checkbox" <%= t.is_done ? 'checked' : '' %> onchange="this.form.submit()">
+              <span class="task-text"><%= t.content %></span>
+            </label>
+          </form>
+          <form method="post" action="/tasks/<%= t.id %>/delete">
+            <button type="submit" class="icon-btn" aria-label="항목 삭제" title="삭제"><%- icon('x', 16) %></button>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+
+    <form method="post" action="/contests/<%= contest.id %>/tasks" class="task-add">
+      <input type="text" name="content" placeholder="예: 발표 자료 만들기" maxlength="200" required aria-label="새 준비 항목">
+      <button type="submit" class="btn btn-soft task-add-btn" aria-label="항목 추가"><%- icon('plus', 20) %></button>
+    </form>
+  </section>
+</div>
+
+<%- include('partials/footer') %>

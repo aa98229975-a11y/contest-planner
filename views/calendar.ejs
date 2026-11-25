@@ -1,0 +1,120 @@
+<%- include('partials/header') %>
+
+<div class="cal-toolbar">
+  <div>
+    <div class="cal-nav">
+      <h1 class="cal-title"><%= year %>년 <%= month %>월</h1>
+      <a href="/calendar?month=<%= prev %>&view=<%= view %>" class="btn btn-sm btn-icon" aria-label="이전 달"><%- icon('chevron-left', 18) %></a>
+      <a href="/calendar?month=<%= next %>&view=<%= view %>" class="btn btn-sm btn-icon" aria-label="다음 달"><%- icon('chevron-right', 18) %></a>
+      <a href="/calendar?view=<%= view %>" class="btn btn-sm">오늘</a>
+    </div>
+    <p class="cal-summary">이번 달 마감 <strong><%= contests.length %>개</strong></p>
+  </div>
+
+  <div class="segmented" role="tablist" aria-label="보기 방식">
+    <a href="/calendar?month=<%= current %>&view=calendar" class="<%= view === 'calendar' ? 'active' : '' %>"><%- icon('calendar', 16) %>달력</a>
+    <a href="/calendar?month=<%= current %>&view=table" class="<%= view === 'table' ? 'active' : '' %>"><%- icon('table', 16) %>표</a>
+  </div>
+</div>
+
+<% if (view === 'calendar') { %>
+  <%# ───────── 달력 보기 ───────── %>
+  <div class="calendar">
+    <% WEEKDAYS.forEach((d, i) => { %>
+      <div class="cal-head <%= i === 0 ? 'sun' : i === 6 ? 'sat' : '' %>"><%= d %></div>
+    <% }) %>
+
+    <% weeks.forEach((week) => { %>
+      <% week.forEach((cell) => { %>
+          <div class="cal-cell <%= cell.isToday ? 'is-today' : '' %> <%= cell.isOtherMonth ? 'is-other' : '' %>">
+            <div class="cal-date">
+              <span class="cal-day <%= cell.dow === 0 ? 'sun' : cell.dow === 6 ? 'sat' : '' %>">
+                <%= cell.isOtherMonth && cell.day === 1 ? `${cell.month}/1` : cell.day %>
+              </span>
+              <a href="/contests/new?date=<%= cell.date %>" class="cal-add" title="이 날짜로 공모전 등록"
+                 aria-label="<%= cell.month %>월 <%= cell.day %>일 마감으로 공모전 등록"><%- icon('plus', 15) %></a>
+            </div>
+            <% cell.items.forEach((c) => { %>
+              <a href="/contests/<%= c.id %>" class="cal-item <%= ddayClass(c) || 'dday-normal' %>"
+                 title="<%= formatTime(c.deadline) %> 마감 · <%= c.title %>">
+                <span class="cal-item-title"><span class="cal-time"><%= formatTime(c.deadline) %></span> <%= c.title %></span>
+              </a>
+            <% }) %>
+          </div>
+      <% }) %>
+    <% }) %>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot dday-urgent"></i>3일 이내</span>
+    <span><i class="dot dday-soon"></i>7일 이내</span>
+    <span><i class="dot dday-normal"></i>여유 있음</span>
+    <span><i class="dot dday-past"></i>마감 지남</span>
+  </div>
+
+<% } else { %>
+  <%# ───────── 표 보기 (엑셀 스타일) ───────── %>
+  <% const cols = ['마감일', '요일', '마감 시간', 'D-day', '공모전명', '주최', '분야', '상태', '진행률']; %>
+  <div class="sheet-frame">
+    <div class="sheet-bar">
+      <span class="sheet-namebox">A1</span>
+      <span class="sheet-fx">fx</span>
+      <span class="sheet-formula"><%= year %>년 <%= month %>월 마감 공모전</span>
+    </div>
+
+    <div class="sheet-wrap">
+      <table class="sheet">
+        <thead>
+          <tr>
+            <th class="corner"></th>
+            <% cols.forEach((_, i) => { %><th class="col-letter"><%= String.fromCharCode(65 + i) %></th><% }) %>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="sheet-header">
+            <th class="row-num">1</th>
+            <% cols.forEach((name) => { %><td><%= name %></td><% }) %>
+          </tr>
+
+          <% contests.forEach((c, i) => { %>
+            <tr class="<%= c.minutes_left < 0 ? 'is-past' : '' %>">
+              <th class="row-num"><%= i + 2 %></th>
+              <td class="num"><%= c.deadline.slice(0, 10) %></td>
+              <td class="center <%= weekday(c.deadline) === '일' ? 'sun' : weekday(c.deadline) === '토' ? 'sat' : '' %>"><%= weekday(c.deadline) %></td>
+              <td class="num"><%= formatTime(c.deadline) %></td>
+              <td class="center dday-cell <%= ddayClass(c) %>"><%= ddayLabel(c) %></td>
+              <td class="title-cell"><a href="/contests/<%= c.id %>"><%= c.title %></a></td>
+              <td><%= c.organizer || '' %></td>
+              <td class="center"><%= c.category || '' %></td>
+              <td class="center"><%= c.status %></td>
+              <td class="num"><%= c.total ? percent(c.done, c.total) + '%' : '-' %></td>
+            </tr>
+          <% }) %>
+
+          <% if (contests.length === 0) { %>
+            <tr>
+              <th class="row-num">2</th>
+              <td colspan="<%= cols.length %>" class="sheet-empty">이번 달에 마감인 공모전이 없어요.</td>
+            </tr>
+          <% } %>
+
+          <tr class="sheet-total">
+            <th class="row-num"><%= Math.max(contests.length, 1) + 2 %></th>
+            <td colspan="4">합계</td>
+            <td><%= contests.length %>건</td>
+            <td colspan="3"></td>
+            <td class="num"><%= avgProgress === null ? '-' : '평균 ' + avgProgress + '%' %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sheet-tabs">
+      <a href="/calendar?month=<%= prev %>&view=table" class="sheet-tab"><%= prev.slice(5) %>월</a>
+      <span class="sheet-tab active"><%= String(month).padStart(2, '0') %>월</span>
+      <a href="/calendar?month=<%= next %>&view=table" class="sheet-tab"><%= next.slice(5) %>월</a>
+    </div>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,10 @@
+# 패키지 폴더: npm install 하면 다시 생겨요
+node_modules/
+
+# DB 비밀번호 같은 내 PC 설정 (대신 .env.example을 올려요)
+.env
+
+# 로그, OS가 만드는 파일
+npm-debug.log*
+.DS_Store
+Thumbs.db

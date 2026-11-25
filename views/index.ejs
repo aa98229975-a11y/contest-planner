@@ -1,0 +1,107 @@
+<%- include('partials/header') %>
+
+<section class="hero">
+  <p class="hero-date"><%= todayLabel() %></p>
+  <h1 class="hero-title">
+    <% if (summary.dueSoon > 0) { %>
+      <%= currentUser.name %>님, 7일 안에 마감되는<br>공모전이 <em><%= summary.dueSoon %>개</em> 있어요
+    <% } else if (summary.preparing > 0) { %>
+      <%= currentUser.name %>님, 이번 주는<br>급한 마감이 없어요
+    <% } else { %>
+      <%= currentUser.name %>님, 도전할 공모전을<br>등록해 보세요
+    <% } %>
+  </h1>
+</section>
+
+<% if (nextUp) { const np = percent(nextUp.done, nextUp.total); %>
+  <a href="/contests/<%= nextUp.id %>" class="next-card <%= ddayClass(nextUp) === 'dday-urgent' ? 'is-urgent' : '' %>">
+    <div class="next-body">
+      <span class="next-label">
+        <%- icon('clock', 15) %>가장 가까운 마감
+        <% if (ddayClass(nextUp) === 'dday-urgent') { %><span class="next-urgent">마감 임박</span><% } %>
+      </span>
+      <strong class="next-title"><%= nextUp.title %></strong>
+      <span class="next-meta"><%= shortDateTime(nextUp.deadline) %> 마감<%= nextUp.organizer ? ` · ${nextUp.organizer}` : '' %></span>
+      <span class="next-progress">
+        <span class="bar"><span style="width: <%= np %>%"></span></span>
+        <span><%= nextUp.total ? `준비 ${nextUp.done}/${nextUp.total}` : '체크리스트 없음' %></span>
+      </span>
+    </div>
+    <div class="next-dday">
+      <strong><%= ddayLabel(nextUp) %></strong>
+      <span><%= timeLeftText(nextUp) || '남았어요' %></span>
+    </div>
+  </a>
+<% } %>
+
+<section class="stats">
+  <a href="/?status=<%= encodeURIComponent('준비중') %>" class="stat">
+    <span class="stat-icon"><%- icon('folder', 20) %></span>
+    <span class="stat-text">
+      <span class="stat-label">준비 중</span>
+      <strong class="stat-value"><%= summary.preparing %><small>개</small></strong>
+    </span>
+  </a>
+  <div class="stat">
+    <span class="stat-icon tone-accent"><%- icon('flame', 20) %></span>
+    <span class="stat-text">
+      <span class="stat-label">7일 안에 마감</span>
+      <strong class="stat-value"><%= summary.dueSoon %><small>개</small></strong>
+    </span>
+  </div>
+  <a href="/?status=<%= encodeURIComponent('수상') %>" class="stat">
+    <span class="stat-icon"><%- icon('award', 20) %></span>
+    <span class="stat-text">
+      <span class="stat-label">수상</span>
+      <strong class="stat-value"><%= summary.awarded %><small>개</small></strong>
+    </span>
+  </a>
+</section>
+
+<div class="list-head">
+  <h2><%= status ? status : '전체 공모전' %><span class="count"><%= contests.length %></span></h2>
+  <nav class="chips" aria-label="상태 필터">
+    <a href="/" class="chip <%= status === '' ? 'active' : '' %>">전체</a>
+    <% STATUSES.forEach((s) => { %>
+      <a href="/?status=<%= encodeURIComponent(s) %>" class="chip <%= status === s ? 'active' : '' %>"><%= s %></a>
+    <% }) %>
+  </nav>
+</div>
+
+<% if (contests.length === 0) { %>
+  <div class="empty">
+    <div class="empty-icon"><%- icon('inbox', 28) %></div>
+    <p class="empty-title"><%= status ? `'${status}' 상태인 공모전이 없어요` : '첫 공모전을 등록해 보세요' %></p>
+    <p>공고 링크만 붙여 넣으면 이름과 마감일을 자동으로 채워 드려요.</p>
+    <a href="/contests/new" class="btn btn-primary"><%- icon('plus', 16) %>공모전 등록</a>
+  </div>
+<% } else { %>
+  <ul class="contest-list">
+    <% contests.forEach((c) => { const p = percent(c.done, c.total); const left = timeLeftText(c); %>
+      <li>
+        <a href="/contests/<%= c.id %>" class="contest-row <%= c.minutes_left < 0 ? 'is-past' : '' %>">
+          <span class="dday-tile <%= ddayClass(c) %>">
+            <%= ddayLabel(c) %>
+            <small><%= c.deadline.slice(5, 7) %>.<%= c.deadline.slice(8, 10) %></small>
+          </span>
+          <span class="contest-main">
+            <span class="contest-title"><%= c.title %></span>
+            <span class="contest-meta">
+              <span class="meta-item meta-strong"><%- icon('clock', 13) %><%= shortDateTime(c.deadline) %></span>
+              <% if (c.organizer) { %><span class="meta-item"><%= c.organizer %></span><% } %>
+              <% if (c.category) { %><span class="meta-item"><%= c.category %></span><% } %>
+              <% if (left) { %><span class="time-left"><%= left %></span><% } %>
+            </span>
+          </span>
+          <span class="badge <%= STATUS_CLASS[c.status] %>"><%= c.status %></span>
+          <span class="progress-box">
+            <span class="progress"><span class="progress-bar" style="width: <%= p %>%"></span></span>
+            <span class="progress-text"><span>준비 <%= c.done %>/<%= c.total %></span><span><%= p %>%</span></span>
+          </span>
+        </a>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+
+<%- include('partials/footer') %>

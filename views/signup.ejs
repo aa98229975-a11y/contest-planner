@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+
+<div class="auth">
+  <%- include('partials/auth-brand') %>
+
+  <section class="card auth-card">
+    <h2 class="auth-title">회원가입</h2>
+    <p class="auth-sub">1분이면 끝나요. 가입하면 내 공모전만 따로 관리할 수 있어요.</p>
+
+    <% if (errors.length) { %>
+      <ul class="errors">
+        <% errors.forEach((e) => { %><li><%- icon('alert', 16) %><span><%= e %></span></li><% }) %>
+      </ul>
+    <% } %>
+
+    <form method="post" action="/signup" class="form">
+      <label>아이디 <span class="hint">영문, 숫자, _ 4~20자</span>
+        <input type="text" name="username" value="<%= form.username || '' %>" pattern="[a-zA-Z0-9_]{4,20}"
+               autocomplete="username" placeholder="contest_pro" required autofocus>
+      </label>
+      <label>이름
+        <input type="text" name="name" value="<%= form.name || '' %>" maxlength="30" required placeholder="홍길동">
+      </label>
+      <label>비밀번호 <span class="hint">8자 이상</span>
+        <input type="password" name="password" minlength="8" maxlength="72" autocomplete="new-password"
+               placeholder="비밀번호" required>
+      </label>
+      <label>비밀번호 확인
+        <input type="password" name="password2" minlength="8" maxlength="72" autocomplete="new-password"
+               placeholder="비밀번호 한 번 더" required>
+      </label>
+      <button type="submit" class="btn btn-primary btn-lg btn-block">가입하고 시작하기</button>
+    </form>
+
+    <p class="auth-switch">이미 계정이 있나요? <a href="/login" class="link">로그인</a></p>
+  </section>
+</div>
+
+<%- include('partials/footer') %>

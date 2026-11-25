@@ -1,0 +1,31 @@
+<%- include('partials/header') %>
+
+<div class="auth">
+  <%- include('partials/auth-brand') %>
+
+  <section class="card auth-card">
+    <h2 class="auth-title">다시 오셨네요</h2>
+    <p class="auth-sub">로그인하고 내 공모전 마감을 확인하세요.</p>
+
+    <% if (errors.length) { %>
+      <ul class="errors">
+        <% errors.forEach((e) => { %><li><%- icon('alert', 16) %><span><%= e %></span></li><% }) %>
+      </ul>
+    <% } %>
+
+    <form method="post" action="/login" class="form">
+      <label>아이디
+        <input type="text" name="username" value="<%= form.username || '' %>" autocomplete="username"
+               placeholder="아이디" required autofocus>
+      </label>
+      <label>비밀번호
+        <input type="password" name="password" autocomplete="current-password" placeholder="비밀번호" required>
+      </label>
+      <button type="submit" class="btn btn-primary btn-lg btn-block">로그인</button>
+    </form>
+
+    <p class="auth-switch">아직 계정이 없나요? <a href="/signup" class="link">회원가입</a></p>
+  </section>
+</div>
+
+<%- include('partials/footer') %>
